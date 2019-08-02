@@ -1,0 +1,4 @@
+# Simulink generated stuff
+*.slxc
+/slprj
+/*_ert_rtw
