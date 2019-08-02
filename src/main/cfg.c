@@ -24,7 +24,6 @@ int main(int argc, char *argv[]) {
   char *name;
   var_type cfg_value;
   char write = '\0';
-  SET_THIS_EXEC_PATH(argv[0]);
 
   while ((opt = getopt(argc, argv, "c:i:f:s:?h")) != -1) {
     switch (opt) {

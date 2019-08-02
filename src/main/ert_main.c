@@ -24,7 +24,6 @@
 #include "../linax0.h"                    /* Model's header file */
 #include "../rtwtypes.h"
 #include "../zero_crossing_types.h"
-
 #include "../lcfg.h"
 
 static RT_MODEL rtM_;
@@ -155,8 +154,8 @@ int_T main(int_T argc, const char *argv[])
 
   /* Unused arguments */
   (void)(argc);
-
-  SET_THIS_EXEC_PATH(argv[0]);
+  (void)(argv);
+  
   if (!(cfg = cfg_new("linax configuration", "./cfg.lua"))) {
     exit(EXIT_FAILURE);
   }

@@ -21,13 +21,6 @@
 #define LCFG_DEFAULT_PATH "/etc/vodisys_cfg.lua"
 #endif
 
-extern char _THIS_EXEC_PATH[MAXPATHLEN];
-#ifndef __APPLE__
-#define SET_THIS_EXEC_PATH(s) strcpy(_THIS_EXEC_PATH, s); dirname(_THIS_EXEC_PATH)
-#else
-#define SET_THIS_EXEC_PATH(s) snprintf(_THIS_EXEC_PATH, MAXPATHLEN, "%s", dirname((char *)s))
-#endif
-
 typedef double data_t;
 typedef long int number_t;
 

@@ -6,13 +6,13 @@
 --  Lua ConFiG facility
 -- All rights reserved (C) 2018 - Paolo Bosetti (paolo.bosetti@unitn.it)
 
-local liluat = require("liluat")
-local cfg = {}
+-- local liluat = require("liluat")
+LCFG = {}
 
-cfg.name = "Unnamed config"
-cfg.sections = {}
+LCFG.name = "Unnamed config"
+LCFG.sections = {}
 
-cfg.template = [[
+LCFG.template = [[
 {{+function quote_if_string( value )
   if type(value) == "string" then
     return "\""..tostring(value).."\""
@@ -43,12 +43,12 @@ cfg.{{+=name}}.{{=key}} = {{=quote_if_string(value)}}
 return cfg
 ]]
 
-function cfg:string()
+function LCFG:string()
   local compiled_template = liluat.compile(self.template)
   return liluat.render(compiled_template, self)
 end
 
-function cfg:write(filename)
+function LCFG:write(filename)
   local code = self:string()
   if code:len() > 0 then
     local file = io.open(filename, "w")
@@ -57,20 +57,20 @@ function cfg:write(filename)
   end
 end
 
-function cfg:save()
-  cfg:write(self.filename)
+function LCFG:save()
+  LCFG:write(self.filename)
 end
 
-function cfg:load(filename)
+function LCFG:load(filename)
   self.sections = dofile(filename)
   self.filename = filename
 end
 
-function cfg:reload()
-  cfg:load(cfg.filename)
+function LCFG:reload()
+  LCFG:load(LCFG.filename)
 end
 
-function cfg:get(path)
+function LCFG:get(path)
   local fields = {}
   local sep = "."
   path:gsub("([^"..sep.."]+)", function(c)
@@ -82,7 +82,7 @@ function cfg:get(path)
   return self.sections[fields[1]][fields[2]]
 end
 
-function cfg:set(path, value)
+function LCFG:set(path, value)
   local fields = {}
   local sep = "."
   path:gsub("([^"..sep.."]+)", function(c)
@@ -95,5 +95,3 @@ function cfg:set(path, value)
   self.sections[fields[1]][fields[2]] = value
   return self
 end
-
-return cfg

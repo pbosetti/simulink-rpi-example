@@ -26,7 +26,7 @@
 -- IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --]]
 
-local liluat = {
+liluat = {
 	private = {} --used to expose private functions for testing
 }
 
@@ -528,5 +528,3 @@ function liluat.render(t, env, options)
 
 	return table.concat(result)
 end
-
-return liluat

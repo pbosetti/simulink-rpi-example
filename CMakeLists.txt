@@ -101,6 +101,19 @@ configure_file(
   ${SOURCE_DIR}/defines.h.in
   ${SOURCE_DIR}/defines.h
 )
+# Generate compiled lua classes in src/luac
+if(NATIVE)
+  execute_process(
+    COMMAND ./bin2c +liluat.lua cfg->lua
+    WORKING_DIRECTORY "${SOURCE_DIR}/luac"
+    OUTPUT_FILE liluat_inc.c
+  )
+  execute_process(
+    COMMAND ./bin2c +./lcfg.lua cfg->lua
+    WORKING_DIRECTORY "${SOURCE_DIR}/luac"
+    OUTPUT_FILE lcfg_inc.c
+  )
+endif()
 
 # TARGETS
 add_library(xtemplate_static STATIC ${LIB_SOURCES})
@@ -150,7 +163,6 @@ install(TARGETS ${TARGETS_LIST}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib/static
 )
-install(DIRECTORY lua DESTINATION .)
 install(FILES cfg.lua DESTINATION .)
 
 #   _____           _               _             

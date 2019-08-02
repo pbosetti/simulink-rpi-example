@@ -4,22 +4,11 @@
 
 #include "lcfg.h"
 
-char _THIS_EXEC_PATH[MAXPATHLEN];
-
 struct lcfg *cfg_new(const char name[LCFG_MAX_NAME_LEN], const char cfg_file[MAXPATHLEN]) {
   struct lcfg *cfg;
-  char *lua_path;
-  assert(strlen(_THIS_EXEC_PATH) > 0);
   // Lua interpreter setup
   lua_State *lua = luaL_newstate();
   luaL_openlibs(lua);
-
-  asprintf(&lua_path, "package.path = \"%s/../lua/?.lua;\"..package.path", _THIS_EXEC_PATH);
-
-  if (luaL_dostring(lua, lua_path) != 0) {
-    fprintf(stderr, "Errors setting package.path %s\n", lua_path);
-    return NULL;
-  }
 
   cfg = cfg_new_in_lua(lua, name, cfg_file);
   cfg->external_lua = 0;
@@ -27,8 +16,6 @@ struct lcfg *cfg_new(const char name[LCFG_MAX_NAME_LEN], const char cfg_file[MAX
 }
 
 struct lcfg *cfg_new_in_lua(lua_State *lua, const char name[LCFG_MAX_NAME_LEN], const char cfg_file[MAXPATHLEN]) {
-  assert(strlen(_THIS_EXEC_PATH) > 0);
-  char *cfg_this_path = NULL;
   struct lcfg *cfg;
   if (!(cfg = (struct lcfg *)malloc(sizeof(struct lcfg)))) {
     fprintf(stderr, "Could not allocate memory for lua config object\n");
@@ -36,13 +23,10 @@ struct lcfg *cfg_new_in_lua(lua_State *lua, const char name[LCFG_MAX_NAME_LEN], 
   }
   strncpy(cfg->cfg_file, cfg_file, strlen(cfg_file));
   strncpy(cfg->name, name, strlen(name));
-  asprintf(&cfg_this_path, "%s/../lua/lcfg.lua", _THIS_EXEC_PATH);
   cfg->lua = lua;
-  if (luaL_dofile(cfg->lua, cfg_this_path) == 1) {
-    fprintf(stderr, "Error in lua script %s:\n%s\n", cfg_this_path, lua_tostring(cfg->lua, -1));
-    return NULL;
-  }
-  lua_setglobal(cfg->lua, LCFG_GLOBAL_NAME);
+  // Include compiled lua source files
+  #include "luac/liluat_inc.c"
+  #include "luac/lcfg_inc.c"
   cfg_load(cfg, cfg_file);
   lua_getglobal(cfg->lua, LCFG_GLOBAL_NAME);
   lua_pushstring(cfg->lua, name);
