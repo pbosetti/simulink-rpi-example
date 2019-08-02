@@ -106,20 +106,32 @@ configure_file(
 add_library(xtemplate_static STATIC ${LIB_SOURCES})
 add_library(xtemplate_shared SHARED ${LIB_SOURCES})
 add_executable(test ${SOURCE_DIR}/main/test.c)
+add_executable(linax ${SOURCE_DIR}/main/ert_main.c)
+add_executable(cfg ${SOURCE_DIR}/main/cfg.c)
 
 
 list(APPEND TARGETS_LIST
-  test
+  test linax cfg
 )
 if(IS_ARM)
   list(APPEND TARGETS_LIST xtemplate_shared)
-  target_link_libraries(test xtemplate_shared)
+  target_link_libraries(xtemplate_shared ${LUA_LIB} dl m)
+  target_link_libraries(xtemplate_static ${LUA_LIB} dl m)
+  target_link_libraries(test xtemplate_static)
+  target_link_libraries(linax xtemplate_static)
+  target_link_libraries(cfg xtemplate_static)
 elseif(IS_OPENWRT)
-  list(APPEND TARGETS_LIST xtemplate_static)
+  list(APPEND TARGETS_LIST xtemplate_static ${LUA_LIB} dl m)
   target_link_libraries(test xtemplate_static)
+  target_link_libraries(linax xtemplate_static)
+  target_link_libraries(cfg xtemplate_static)
 else()
-  list(APPEND TARGETS_LIST xtemplate_static)
+  list(APPEND TARGETS_LIST xtemplate_static xtemplate_shared)
+  target_link_libraries(xtemplate_shared ${LUA_LIB} dl m)
+  target_link_libraries(xtemplate_static ${LUA_LIB} dl m)
   target_link_libraries(test xtemplate_static)
+  target_link_libraries(linax xtemplate_static)
+  target_link_libraries(cfg xtemplate_static)
 endif()
 
 #   _____           _        _ _ 
@@ -138,6 +150,8 @@ install(TARGETS ${TARGETS_LIST}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib/static
 )
+install(DIRECTORY lua DESTINATION .)
+install(FILES cfg.lua DESTINATION .)
 
 #   _____           _               _             
 #  |  __ \         | |             (_)            

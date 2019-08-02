@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'linax0'.
  *
- * Model version                  : 1.8
+ * Model version                  : 1.11
  * Simulink Coder version         : 9.1 (R2019a) 23-Nov-2018
- * C/C++ source code generated on : Fri Aug  2 14:28:38 2019
+ * C/C++ source code generated on : Fri Aug  2 16:41:18 2019
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM 7
@@ -46,7 +46,7 @@ AX_params_type AX_params = {
 };
 
 PID_params_type PID_params = {
-  /* PID_params */
+  /* D */
   { 5.0, 5.0, 5.0 },
 
   /* I */
@@ -340,8 +340,7 @@ void linax0_step2(RT_MODEL *const rtM, real_T rtU_reset) /* Sample time: [0.005s
    * About '<S120>/TSamp':
    *  y = u * K where K = 1 / ( w * Ts )
    */
-  rtb_TSamp = PID_params.PID_params[2] * rtDW->TmpRTBAtSum2Outport1_Buffer *
-    200.0;
+  rtb_TSamp = PID_params.D[2] * rtDW->TmpRTBAtSum2Outport1_Buffer * 200.0;
 
   /* Delay: '<S120>/UD' incorporates:
    *  Inport: '<Root>/reset'
@@ -446,8 +445,7 @@ void linax0_step2(RT_MODEL *const rtM, real_T rtU_reset) /* Sample time: [0.005s
    * About '<S76>/TSamp':
    *  y = u * K where K = 1 / ( w * Ts )
    */
-  rtb_TSamp_o = PID_params.PID_params[1] * rtDW->TmpRTBAtSum1Outport1_Buffer *
-    200.0;
+  rtb_TSamp_o = PID_params.D[1] * rtDW->TmpRTBAtSum1Outport1_Buffer * 200.0;
 
   /* Delay: '<S76>/UD' incorporates:
    *  Inport: '<Root>/reset'
@@ -552,8 +550,7 @@ void linax0_step2(RT_MODEL *const rtM, real_T rtU_reset) /* Sample time: [0.005s
    * About '<S32>/TSamp':
    *  y = u * K where K = 1 / ( w * Ts )
    */
-  rtb_TSamp_p = PID_params.PID_params[0] * rtDW->TmpRTBAtSumOutport1_Buffer *
-    200.0;
+  rtb_TSamp_p = PID_params.D[0] * rtDW->TmpRTBAtSumOutport1_Buffer * 200.0;
 
   /* Delay: '<S32>/UD' incorporates:
    *  Inport: '<Root>/reset'

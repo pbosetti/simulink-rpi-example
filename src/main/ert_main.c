@@ -25,6 +25,8 @@
 #include "../rtwtypes.h"
 #include "../zero_crossing_types.h"
 
+#include "../lcfg.h"
+
 static RT_MODEL rtM_;
 static RT_MODEL *const rtMPtr = &rtM_; /* Real-time model */
 static DW rtDW;                        /* Observable states */
@@ -148,11 +150,38 @@ void rt_OneStep(RT_MODEL *const rtM)
  */
 int_T main(int_T argc, const char *argv[])
 {
+  struct lcfg *cfg = NULL;
   RT_MODEL *const rtM = rtMPtr;
 
   /* Unused arguments */
   (void)(argc);
-  (void)(argv);
+
+  SET_THIS_EXEC_PATH(argv[0]);
+  if (!(cfg = cfg_new("linax configuration", "./cfg.lua"))) {
+    exit(EXIT_FAILURE);
+  }
+
+  AX_params.m[0] = cfg_get_data(cfg, "x.m");
+  AX_params.c[0] = cfg_get_data(cfg, "x.c");
+  PID_params.P[0] = cfg_get_data(cfg, "x.P");
+  PID_params.I[0] = cfg_get_data(cfg, "x.I");
+  PID_params.D[0] = cfg_get_data(cfg, "x.D");
+  PID_params.sat[0] = cfg_get_data(cfg, "x.sat");
+
+  AX_params.m[1] = cfg_get_data(cfg, "y.m");
+  AX_params.c[1] = cfg_get_data(cfg, "y.c");
+  PID_params.P[1] = cfg_get_data(cfg, "y.P");
+  PID_params.I[1] = cfg_get_data(cfg, "y.I");
+  PID_params.D[1] = cfg_get_data(cfg, "y.D");
+  PID_params.sat[1] = cfg_get_data(cfg, "y.sat");
+
+  AX_params.m[2] = cfg_get_data(cfg, "z.m");
+  AX_params.c[2] = cfg_get_data(cfg, "z.c");
+  PID_params.P[2] = cfg_get_data(cfg, "z.P");
+  PID_params.I[2] = cfg_get_data(cfg, "z.I");
+  PID_params.D[2] = cfg_get_data(cfg, "z.D");
+  PID_params.sat[2] = cfg_get_data(cfg, "z.sat");
+  cfg_free(cfg);
 
   /* Pack model data into RTM */
   rtM->dwork = &rtDW;
@@ -168,6 +197,7 @@ int_T main(int_T argc, const char *argv[])
   /* Simulating the model step behavior (in non real-time) to
    *  simulate model behavior at stop time.
    */
+  printf("t, x, y, z, xdot, ydot, zdot\n");
   while ((rtmGetErrorStatus(rtM) == (NULL)) && !rtmGetStopRequested(rtM)) {
     if (rtmGetT(rtM) >= 0.1) {
       rtU_setpoint[0] = 1.0;
