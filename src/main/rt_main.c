@@ -148,11 +148,22 @@ void rt_OneStep(RT_MODEL *const rtM)
  * Attaching rt_OneStep to a real-time clock is target specific.  This example
  * illustrates how you do this relative to initializing the model.
  */
+#include <signal.h>
+#include <sched.h>
+#include <sys/time.h>
+#include <time.h>
+
+void tick() {
+  rt_OneStep(rtMPtr);
+}
+
 int_T main(int_T argc, const char *argv[])
 {
   struct lcfg *cfg = NULL;
   RT_MODEL *const rtM = rtMPtr;
-
+  struct sigaction sa;
+  struct itimerval timer;
+  
   /* Unused arguments */
   (void)(argc);
   (void)(argv);
@@ -161,10 +172,15 @@ int_T main(int_T argc, const char *argv[])
   // Setting scheduler
   {
     struct sched_param sparam;
-    sparam.sched_priority = 99;
-    sched_setscheduler(0, SCHED_FIFO, &sparam);
+    sparam.sched_priority = sched_get_priority_min(SCHED_FIFO);
+    if (sched_setscheduler(0, SCHED_FIFO, &sparam) != 0) {
+      perror("Error setting scheduler to SCHED_FIFO");
+    }
   }
 #endif
+  memset (&sa, 0, sizeof (sa));
+  sa.sa_handler = &tick;
+  sigaction (SIGALRM, &sa, NULL);
   
   if (!(cfg = cfg_new("linax configuration", "./cfg.lua"))) {
     exit(EXIT_FAILURE);
@@ -199,6 +215,11 @@ int_T main(int_T argc, const char *argv[])
 
   /* Initialize model */
   linax0_initialize(rtM);
+  timer.it_interval.tv_sec = 0;
+  timer.it_interval.tv_usec = rtM->Timing.stepSize0 * 1E6;
+  timer.it_value.tv_sec = 0;
+  timer.it_value.tv_usec = rtM->Timing.stepSize0 * 1E6;
+
   rtU_setpoint[0] = 0.0;
   rtU_setpoint[1] = 0.0;
   rtU_setpoint[2] = 0.0;
@@ -207,17 +228,20 @@ int_T main(int_T argc, const char *argv[])
    *  simulate model behavior at stop time.
    */
   printf("t, x, y, z, xdot, ydot, zdot\n");
+  setitimer(ITIMER_REAL, &timer, NULL);
+  struct timespec ts;
   while ((rtmGetErrorStatus(rtM) == (NULL)) && !rtmGetStopRequested(rtM)) {
     if (rtmGetT(rtM) >= 0.1) {
       rtU_setpoint[0] = 1.0;
       rtU_setpoint[1] = 1.0;
       rtU_setpoint[2] = 1.0;
     }
-    rt_OneStep(rtM);
-    printf("%f, %f, %f, %f, %f, %f, %f\n", rtmGetT(rtM), rtY_x[0], rtY_x[1], rtY_x[2], rtY_xdot[0], rtY_xdot[1], rtY_xdot[2]);
-    if (rtmGetT(rtM) >= 1.0) {
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    printf("%f, %f, %f, %f, %f, %f, %f, %f\n", ts.tv_sec + ts.tv_nsec/1E9, rtmGetT(rtM), rtY_x[0], rtY_x[1], rtY_x[2], rtY_xdot[0], rtY_xdot[1], rtY_xdot[2]);
+    if (rtmGetT(rtM) >= 2.0) {
       rtmSetStopRequested(rtM, true);
     }
+    sleep(1); // sleep() is interrupted by SIGALRM
   }
 
   /* Disable rt_OneStep() here */

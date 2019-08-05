@@ -104,12 +104,12 @@ configure_file(
 # Generate compiled lua classes in src/luac
 if(NATIVE)
   execute_process(
-    COMMAND ./bin2c +liluat.lua cfg->lua
+    COMMAND ./bin2c ./liluat.lua cfg->lua
     WORKING_DIRECTORY "${SOURCE_DIR}/luac"
     OUTPUT_FILE liluat_inc.c
   )
   execute_process(
-    COMMAND ./bin2c +./lcfg.lua cfg->lua
+    COMMAND ./bin2c ./lcfg.lua cfg->lua
     WORKING_DIRECTORY "${SOURCE_DIR}/luac"
     OUTPUT_FILE lcfg_inc.c
   )
@@ -120,11 +120,13 @@ add_library(xtemplate_static STATIC ${LIB_SOURCES})
 add_library(xtemplate_shared SHARED ${LIB_SOURCES})
 add_executable(test ${SOURCE_DIR}/main/test.c)
 add_executable(linax ${SOURCE_DIR}/main/ert_main.c)
+add_executable(linax_rt ${SOURCE_DIR}/main/rt_main.c)
 add_executable(cfg ${SOURCE_DIR}/main/cfg.c)
+add_executable(rt ${SOURCE_DIR}/main/rt_test.c)
 
 
 list(APPEND TARGETS_LIST
-  test linax cfg
+  test linax linax_rt cfg rt
 )
 if(IS_ARM)
   list(APPEND TARGETS_LIST xtemplate_shared)
@@ -132,7 +134,9 @@ if(IS_ARM)
   target_link_libraries(xtemplate_static ${LUA_LIB} dl m)
   target_link_libraries(test xtemplate_static)
   target_link_libraries(linax xtemplate_static)
+  target_link_libraries(linax_rt xtemplate_static)
   target_link_libraries(cfg xtemplate_static)
+  target_link_libraries(rt m)
 elseif(IS_OPENWRT)
   list(APPEND TARGETS_LIST xtemplate_static ${LUA_LIB} dl m)
   target_link_libraries(test xtemplate_static)
@@ -144,6 +148,7 @@ else()
   target_link_libraries(xtemplate_static ${LUA_LIB} dl m)
   target_link_libraries(test xtemplate_static)
   target_link_libraries(linax xtemplate_static)
+  target_link_libraries(linax_rt xtemplate_static)
   target_link_libraries(cfg xtemplate_static)
 endif()
 
