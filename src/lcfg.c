@@ -26,7 +26,9 @@ struct lcfg *cfg_new_in_lua(lua_State *lua, const char name[LCFG_MAX_NAME_LEN], 
   cfg->lua = lua;
   // Include compiled lua source files
   #include "luac/liluat_inc.c"
+  lua_setglobal(lua, "liluat");
   #include "luac/lcfg_inc.c"
+  lua_setglobal(lua, LCFG_GLOBAL_NAME);
   cfg_load(cfg, cfg_file);
   lua_getglobal(cfg->lua, LCFG_GLOBAL_NAME);
   lua_pushstring(cfg->lua, name);

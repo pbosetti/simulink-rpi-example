@@ -528,3 +528,5 @@ function liluat.render(t, env, options)
 
 	return table.concat(result)
 end
+
+return(liluat)

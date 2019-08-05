@@ -43,7 +43,7 @@ local function boilerplate(fmt)
     status and ")" or "",
     status and status.."=" or "",
     lua and lua or "L",
-    filename)
+    filename, filename, filename)
 end
 
 local dump do
@@ -60,11 +60,16 @@ io.write(boilerplate[=[
   if (%sluaL_loadfile(%s,%q)%s==0) %slua_pcall(%s, 0, 0, 0); 
 */
 /* %s */
-static const unsigned char B1[]={
+  static const unsigned char B1[] = {
 ]=], dump(content), boilerplate[=[
 
-};
+  };
 
- if (%sluaL_loadbuffer(%s,(const char*)B1,sizeof(B1),%q)%s==0) %slua_pcall(%s, 0, 0, 0);
+  if (%sluaL_loadbuffer(%s, (const char*)B1, sizeof(B1), %q)%s==0)  {
+    if (%slua_pcall(%s, 0, 1, 0) != LUA_OK)
+      fprintf(stderr, "Error calling compiled %%s!\n", %q);
+  } else {
+    fprintf(stderr, "Error loading compiled buffer for %%s!\n", %q);
+  }
 }
 ]=])

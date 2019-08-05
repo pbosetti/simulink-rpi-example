@@ -95,3 +95,6 @@ function LCFG:set(path, value)
   self.sections[fields[1]][fields[2]] = value
   return self
 end
+
+
+return(LCFG)
