@@ -21,11 +21,15 @@
 
 #include <stddef.h>
 #include <stdio.h>              /* This ert_main.c example uses printf/fflush */
+#include <sched.h>
+#include <signal.h>
+#include <sched.h>
+#include <sys/time.h>
+#include <time.h>
 #include "../linax0.h"                    /* Model's header file */
 #include "../rtwtypes.h"
 #include "../zero_crossing_types.h"
 #include "../lcfg.h"
-#include <sched.h>
 
 static RT_MODEL rtM_;
 static RT_MODEL *const rtMPtr = &rtM_; /* Real-time model */
@@ -148,10 +152,6 @@ void rt_OneStep(RT_MODEL *const rtM)
  * Attaching rt_OneStep to a real-time clock is target specific.  This example
  * illustrates how you do this relative to initializing the model.
  */
-#include <signal.h>
-#include <sched.h>
-#include <sys/time.h>
-#include <time.h>
 
 void tick() {
   rt_OneStep(rtMPtr);
