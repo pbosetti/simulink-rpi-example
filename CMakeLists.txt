@@ -138,6 +138,11 @@ if(IS_ARM)
   target_link_libraries(xtemplate_static ${LUA_LIB} dl m)
   target_link_libraries(test xtemplate_static)
   target_link_libraries(linax xtemplate_static)
+  # warning: for linking to the static libzmq.a, you also need to
+  #          link to libstdc++ and to pthread. Also, typically you don't
+  #          want to add pthread here, because it results in -lpthread rather
+  #          than -pthread. Portable way is to use find_package() and
+  #          link to Threads::Threads
   target_link_libraries(linax_rt xtemplate_static libzmq.a Threads::Threads stdc++)
   target_link_libraries(cfg xtemplate_static)
   target_link_libraries(rt m)
