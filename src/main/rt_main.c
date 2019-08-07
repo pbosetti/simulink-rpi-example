@@ -26,6 +26,9 @@
 #include <sched.h>
 #include <sys/time.h>
 #include <time.h>
+#include <zmq.h>
+#include <assert.h>
+
 #include "../linax0.h"                    /* Model's header file */
 #include "../rtwtypes.h"
 #include "../zero_crossing_types.h"
@@ -163,6 +166,10 @@ int_T main(int_T argc, const char *argv[])
   RT_MODEL *const rtM = rtMPtr;
   struct sigaction sa;
   struct itimerval timer;
+  void *zmq_context;
+  void *zmq_server;
+  int rc;
+  char bufin[256] = "", bufout[256] = "";
   
   /* Unused arguments */
   (void)(argc);
@@ -224,6 +231,12 @@ int_T main(int_T argc, const char *argv[])
   rtU_setpoint[1] = 0.0;
   rtU_setpoint[2] = 0.0;
 
+  // ZeroMQ server
+  zmq_context = zmq_ctx_new();
+  zmq_server = zmq_socket(zmq_context, ZMQ_REP);
+  rc = zmq_bind(zmq_server, "tcp://*:5555");
+  assert(rc == 0);
+
   /* Simulating the model step behavior (in non real-time) to
    *  simulate model behavior at stop time.
    */
@@ -231,16 +244,42 @@ int_T main(int_T argc, const char *argv[])
   setitimer(ITIMER_REAL, &timer, NULL);
   struct timespec ts;
   while ((rtmGetErrorStatus(rtM) == (NULL)) && !rtmGetStopRequested(rtM)) {
-    if (rtmGetT(rtM) >= 0.1) {
-      rtU_setpoint[0] = 1.0;
-      rtU_setpoint[1] = 1.0;
-      rtU_setpoint[2] = 1.0;
-    }
+    // if (rtmGetT(rtM) >= 0.1) {
+    //   rtU_setpoint[0] = 1.0;
+    //   rtU_setpoint[1] = 1.0;
+    //   rtU_setpoint[2] = 1.0;
+    // }
+    zmq_recv(zmq_server, bufin, 256, 0);
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    printf("%f, %f, %f, %f, %f, %f, %f, %f\n", ts.tv_sec + ts.tv_nsec/1E9, rtmGetT(rtM), rtY_x[0], rtY_x[1], rtY_x[2], rtY_xdot[0], rtY_xdot[1], rtY_xdot[2]);
-    if (rtmGetT(rtM) >= 2.0) {
-      rtmSetStopRequested(rtM, true);
+    sprintf(bufout, "%f, %f, %f, %f, %f, %f, %f, %f\n", ts.tv_sec + ts.tv_nsec/1E9, rtmGetT(rtM), rtY_x[0], rtY_x[1], rtY_x[2], rtY_xdot[0], rtY_xdot[1], rtY_xdot[2]);
+
+    switch (bufin[0])
+    {
+    case '.':
+      printf("got %s\n", bufin);
+      break;
+
+    case 's': {
+      double sp = atof(bufin+1);
+      printf("\nsp: %f\n", sp);
+      rtU_setpoint[0] = sp;
+      rtU_setpoint[1] = sp;
+      rtU_setpoint[2] = sp;
+      break;
     }
+
+    case 'X':
+      rtmSetStopRequested(rtM, true);
+      break;
+
+    default:
+      if (bufin[0])
+        printf("unmanaged request: %c\n", bufin[0]);
+      break;
+    }
+    zmq_send(zmq_server, bufout, strlen(bufout), 0);
+
+    memset(bufin, 0, 256);
     sleep(1); // sleep() is interrupted by SIGALRM
   }
 

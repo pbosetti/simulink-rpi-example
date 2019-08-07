@@ -115,6 +115,10 @@ if(NATIVE)
   )
 endif()
 
+# Prefer -pthread to -lpthread
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 # TARGETS
 add_library(xtemplate_static STATIC ${LIB_SOURCES})
 add_library(xtemplate_shared SHARED ${LIB_SOURCES})
@@ -134,7 +138,7 @@ if(IS_ARM)
   target_link_libraries(xtemplate_static ${LUA_LIB} dl m)
   target_link_libraries(test xtemplate_static)
   target_link_libraries(linax xtemplate_static)
-  target_link_libraries(linax_rt xtemplate_static)
+  target_link_libraries(linax_rt xtemplate_static libzmq.a Threads::Threads stdc++)
   target_link_libraries(cfg xtemplate_static)
   target_link_libraries(rt m)
 elseif(IS_OPENWRT)
@@ -148,7 +152,7 @@ else()
   target_link_libraries(xtemplate_static ${LUA_LIB} dl m)
   target_link_libraries(test xtemplate_static)
   target_link_libraries(linax xtemplate_static)
-  target_link_libraries(linax_rt xtemplate_static)
+  target_link_libraries(linax_rt xtemplate_static zmq Threads::Threads)
   target_link_libraries(cfg xtemplate_static)
 endif()
 
