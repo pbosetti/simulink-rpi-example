@@ -261,7 +261,7 @@ int_T main(int_T argc, const char *argv[])
 
     case 's': {
       double sp = atof(bufin+1);
-      printf("\nsp: %f\n", sp);
+      printf("sp: %f\n", sp);
       rtU_setpoint[0] = sp;
       rtU_setpoint[1] = sp;
       rtU_setpoint[2] = sp;

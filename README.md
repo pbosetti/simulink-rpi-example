@@ -104,7 +104,7 @@ in the interactive environment, type `c`, then move down the list and repeatedly
 Take as example the `Dockerfile` generated in Step 1: there are several steps showing how different libraries are cross compiled within the image. If the provided libraries are not enough, just add your own. My suggestion is to start with the provided image, build it with:
 
 ```bash
-$ docker build -t armv7 -f arm7.Dockerfile .
+$ docker build -t armv7 .
 $ docker run --rm armv7 > armv7 && chmod a+x armv7
 ```
 
